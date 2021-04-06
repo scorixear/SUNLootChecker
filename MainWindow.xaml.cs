@@ -265,7 +265,7 @@ namespace SUNLootChecker
         {
             Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();
             string[] lines = text.Split('\n');
-            Regex regex = new Regex("\\d\\d\\d\\d-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d [AP]M;(\\w+);(\\w+)(?:@(\\d+))?;(\\d+);@?\\w+");
+            Regex regex = new Regex("\\d\\d\\d\\d-\\d\\d-\\d\\d \\d?\\d:\\d\\d:\\d\\d [AP]M;(\\w+);(\\w+)(?:@(\\d+))?;(\\d+);@?\\w+");
 
 
             foreach (string line in lines)
