@@ -1,0 +1,51 @@
+﻿<Window x:Class="SUNLootChecker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SUNLootChecker"
+        mc:Ignorable="d"
+        Title="SUN Lootchecker" Height="800" Width="1280">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="20px"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="30px"/>
+        </Grid.RowDefinitions>
+
+        
+        
+        
+        <Button x:Name="CheckButton" Grid.Row="1" Grid.ColumnSpan="2" Content="Check Loot" Click="CheckButton_Click" Margin="5,0,5,0"/>
+
+        <DataGrid x:Name="ResultGrid" Grid.Row="2" Grid.ColumnSpan="2" Margin="2" BorderBrush="Black" ItemsSource="{Binding Source=ResultItems}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Player" Binding="{Binding PlayerName}" Width="Auto"/>
+                <DataGridTextColumn Header="Amount" Binding="{Binding Amount}" Width="Auto"/>
+                <DataGridTemplateColumn Header="Items" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ListBox ItemsSource="{Binding Items}" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBox x:Name="ResultText" HorizontalAlignment="Stretch" Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" Grid.Row="2" Grid.ColumnSpan="2" Margin="5" BorderBrush="Black" Background="LightGray" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Visibility="Collapsed"/>
+        <GroupBox Header="Player Loot" Margin="5">
+            <TextBox x:Name="AOLootText" HorizontalAlignment="Stretch"  Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" BorderBrush="Black" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+        </GroupBox>
+        <GroupBox Header="Chest Log" Margin="5"  Grid.Column="1">
+            <TextBox x:Name="ChestLogText" HorizontalAlignment="Stretch" Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" BorderBrush="Black" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+        </GroupBox>
+
+        <ProgressBar x:Name="TotalProgress" Grid.Row="3" Grid.ColumnSpan="2" Margin="5"/>
+
+    </Grid>
+</Window>
