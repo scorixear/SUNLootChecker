@@ -31,11 +31,11 @@
     <None Update="Exclude.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="LICENSE">
+    <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-    <None Include="logo.png">
+    <None Include="..\logo.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
