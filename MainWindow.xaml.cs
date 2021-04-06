@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -149,20 +151,7 @@ namespace SUNLootChecker
 
         private bool CheckItem(string item)
         {
-            string[] ignoredItems = new[] 
-            { 
-                "Trash", 
-                "Bag",
-                "Potion",
-                "Omelette",
-                "Swiftclaw",
-                "Soul",
-                "Relic",
-                "Cape",
-                "Stew",
-                "Tome of Insight",
-                "Horse",
-            };
+            string[] ignoredItems = JsonConvert.DeserializeObject<string[]>(File.ReadAllText(Path.Combine(ItemDic.BaseLocation, "Exclude.json")));
 
             foreach(string exclude in ignoredItems)
             {
@@ -265,7 +254,7 @@ namespace SUNLootChecker
         {
             Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();
             string[] lines = text.Split('\n');
-            Regex regex = new Regex("\\d\\d\\d\\d-\\d\\d-\\d\\d \\d?\\d:\\d\\d:\\d\\d [AP]M;(\\w+);(\\w+)(?:@(\\d+))?;(\\d+);@?\\w+");
+            Regex regex = new Regex("[\\d\\.\\- :APM]+;(\\w+);(\\w+)(?:@(\\d+))?;(\\d+);@?\\w+");
 
 
             foreach (string line in lines)

@@ -11,14 +11,14 @@ namespace SUNLootChecker
     [Serializable]
     public class ItemDic
     {
-        private static string baseLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        public static string BaseLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         public static ItemDic instance = Instantiate();
 
         private static ItemDic Instantiate()
         {
             ItemDic returnInstance;
-            if (File.Exists(Path.Combine(baseLocation, "itemDic.json"))) {
-                returnInstance = JsonConvert.DeserializeObject<ItemDic>(File.ReadAllText(Path.Combine(baseLocation, "itemDic.json")));
+            if (File.Exists(Path.Combine(BaseLocation, "itemDic.json"))) {
+                returnInstance = JsonConvert.DeserializeObject<ItemDic>(File.ReadAllText(Path.Combine(BaseLocation, "itemDic.json")));
             } else
             {
                 returnInstance = new ItemDic();
@@ -28,7 +28,7 @@ namespace SUNLootChecker
 
         private void Save()
         {
-            File.WriteAllText(Path.Combine(baseLocation, "itemDic.json"), JsonConvert.SerializeObject(this));
+            File.WriteAllText(Path.Combine(BaseLocation, "itemDic.json"), JsonConvert.SerializeObject(this));
         }
 
         private ItemDic() { }
