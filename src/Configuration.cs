@@ -9,31 +9,32 @@ namespace SUNLootChecker
 {
 
     [Serializable]
-    public class ItemDic
+    public class Configuration
     {
         public static string BaseLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        public static ItemDic instance = Instantiate();
+        public static Configuration instance = Instantiate();
 
-        private static ItemDic Instantiate()
+        private static Configuration Instantiate()
         {
-            ItemDic returnInstance;
-            if (File.Exists(Path.Combine(BaseLocation, "itemDic.json"))) {
-                returnInstance = JsonConvert.DeserializeObject<ItemDic>(File.ReadAllText(Path.Combine(BaseLocation, "itemDic.json")));
+            Configuration returnInstance;
+            if (File.Exists(Path.Combine(BaseLocation, "Configuration.json"))) {
+                returnInstance = JsonConvert.DeserializeObject<Configuration>(File.ReadAllText(Path.Combine(BaseLocation, "Configuration.json")));
             } else
             {
-                returnInstance = new ItemDic();
+                returnInstance = new Configuration();
             }
             return returnInstance;
         }
 
         private void Save()
         {
-            File.WriteAllText(Path.Combine(BaseLocation, "itemDic.json"), JsonConvert.SerializeObject(this));
+            File.WriteAllText(Path.Combine(BaseLocation, "Configuration.json"), JsonConvert.SerializeObject(this));
         }
 
-        private ItemDic() { }
+        private Configuration() { }
 
         public IReadOnlyDictionary<string, string> ItemList { get; set; } = new Dictionary<string, string>();
+        public List<string> Guilds { get; set; } = new List<string>() { "jZrWFzPxQwqUeAGkFtOUmw", "ExJYCj3qRqWT8toiyF46Tg" };
         public async Task<string> GetItem(string searchItem)
         {
             if (ItemList.ContainsKey(searchItem))
