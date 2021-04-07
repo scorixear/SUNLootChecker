@@ -32,7 +32,6 @@ namespace SUNLootChecker
 
         private async void CheckButton_Click(object sender, RoutedEventArgs e)
         {
-            CheckButton.Background = new SolidColorBrush(Color.FromRgb(179, 234, 147));
             string playerLootString = AOLootText.Text;
             string chestLootString = ChestLogText.Text;
             Dispatcher.Invoke(() => TotalProgress.Value = 0);
@@ -125,7 +124,6 @@ namespace SUNLootChecker
             });
             t.Start();
             await t;
-            CheckButton.Background = new SolidColorBrush(Color.FromRgb(221, 221, 221));
             ResultGrid.ItemsSource = null;
             ResultGrid.ItemsSource = ResultList;
 
