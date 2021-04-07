@@ -4,9 +4,9 @@
              xmlns:local="clr-namespace:SUNLootChecker"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <SolidColorBrush x:Key="Background" Color="#FF212121"/>
-        <SolidColorBrush x:Key="Border" Color="#311B92"/>
-        <SolidColorBrush x:Key="Foreground" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="Background" Color="#2D2D30"/>
+        <SolidColorBrush x:Key="Border" Color="#7E57C2"/>
+        <SolidColorBrush x:Key="Foreground" Color="#EEEEEE"/>
         <SolidColorBrush x:Key="Hover" Color="#4527A0"/>
         <SolidColorBrush x:Key="HoverClick" Color="#512DA8"/>
         <Style x:Key="TitleBarButtonStyle" TargetType="Button">

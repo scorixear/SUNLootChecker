@@ -324,6 +324,8 @@ namespace SUNLootChecker
         private async void Grid_Loaded(object sender, RoutedEventArgs e)
         {
             await GuildChecker.Instance.UpdateMembers(this);
+            ResultGrid.Visibility = Visibility.Visible;
+            ResultGrid.ItemsSource = null;
         }
 
 
