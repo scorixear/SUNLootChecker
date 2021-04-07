@@ -97,8 +97,8 @@
 
             <Grid Loaded="Grid_Loaded" Grid.Row="1" Grid.ColumnSpan="6">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"/>
@@ -109,10 +109,24 @@
 
 
 
-
-                <Button x:Name="CheckButton" Grid.Row="1" Grid.ColumnSpan="2" Content="Check Loot" Click="CheckButton_Click" Margin="5,0,5,0" Background="{StaticResource Background}" BorderBrush="{StaticResource Border}" Foreground="{StaticResource Foreground}" Style="{StaticResource TitleBarButtonStyle}"/>
-
-                <DataGrid x:Name="ResultGrid" Grid.Row="2" Grid.ColumnSpan="2" Margin="2" BorderBrush="{StaticResource Border}" ItemsSource="{Binding Source=ResultItems}" AutoGenerateColumns="False" Background="{DynamicResource Background}" Foreground="{DynamicResource Foreground}" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True" HeadersVisibility="Column" CanUserReorderColumns="False" Visibility="Collapsed">
+                <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="CheckButton"  Grid.Column="0" Content="Check Loot" Click="CheckButton_Click" Margin="5,0,5,0" Background="{StaticResource Background}" BorderBrush="{StaticResource Border}" Foreground="{StaticResource Foreground}" Style="{StaticResource TitleBarButtonStyle}"/>
+                    <Button x:Name="CopyClipboardButton" Grid.Column="1" Width="25px" Click="CopyClipboard_Click" Margin="5,0,5,0" Background="{StaticResource Background}" BorderBrush="{StaticResource Border}" Foreground="{StaticResource Foreground}" Style="{StaticResource TitleBarButtonStyle}">
+                        <Path
+			            Width="25"
+			            Height="25"
+			            Data="m 10 8 h 10 v 13 h -10 z m -4 -4 h 11 v 4 h -7 v 9 h -4 z "
+			            Stroke="{Binding Path=Foreground,
+							 RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+			            StrokeThickness="1" />
+                    </Button>
+                </Grid>
+                
+                <DataGrid x:Name="ResultGrid" Grid.Row="2" Grid.ColumnSpan="3" Margin="2" BorderBrush="{StaticResource Border}" ItemsSource="{Binding Source=ResultItems}" AutoGenerateColumns="False" Background="{DynamicResource Background}" Foreground="{DynamicResource Foreground}" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="False" HeadersVisibility="Column" CanUserReorderColumns="False" Visibility="Collapsed">
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
                             <Setter Property="Background" Value="{StaticResource Background}"/>
@@ -188,7 +202,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <TextBox x:Name="ResultText" HorizontalAlignment="Stretch" Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" Grid.Row="2" Grid.ColumnSpan="2" Margin="5" BorderBrush="{DynamicResource Border}" Background="{DynamicResource Background}" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Foreground}"/>
+                <TextBox x:Name="ResultText" HorizontalAlignment="Stretch" Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" Grid.Row="2" Grid.ColumnSpan="3" Margin="5" BorderBrush="{DynamicResource Border}" Background="{DynamicResource Background}" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Foreground}"/>
                 <GroupBox Header="Player Loot" Margin="5" BorderBrush="#FF4527A0">
                     <TextBox x:Name="AOLootText" BorderThickness="0" HorizontalAlignment="Stretch"  Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" BorderBrush="{DynamicResource Border}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="{DynamicResource Background}" Foreground="{DynamicResource Foreground}"/>
                 </GroupBox>

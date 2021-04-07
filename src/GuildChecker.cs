@@ -23,7 +23,7 @@ namespace SUNLootChecker
             window.Dispatcher.Invoke(() =>
             {
                 window.ResultText.Visibility = System.Windows.Visibility.Visible;
-                window.ResultText.Text = "Loading Guild members (this will take a while) ... ";
+                window.ResultText.Text = "Loading guild members (this will take a while) ... ";
                 Mouse.OverrideCursor = Cursors.Wait;
                 
             });

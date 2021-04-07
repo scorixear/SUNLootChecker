@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,6 +30,37 @@ namespace SUNLootChecker
         {
             InitializeComponent();
            
+        }
+
+        private async void CopyClipboard_Click(object sender, RoutedEventArgs e)
+        {
+            StringBuilder builder = new StringBuilder();
+            List<ResultEntry> clonedResultList = new List<ResultEntry>(ResultList);
+            clonedResultList = clonedResultList.OrderByDescending((entry) =>  entry.Amount).ThenBy((entry) => entry.PlayerName).ToList();
+            foreach(ResultEntry entry in clonedResultList)
+            {
+                builder.Append($"**{entry.PlayerName}** {entry.Amount}");
+                builder.AppendLine();
+                foreach (string item in entry.Items)
+                {
+                    builder.Append("- " + item);
+                    builder.AppendLine();
+                }
+                builder.AppendLine();
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                try
+                {
+                    Clipboard.SetText(builder.ToString());
+                    return;
+                }
+                catch { }
+                System.Threading.Thread.Sleep(10);
+            }
+
+            
         }
 
         private async void CheckButton_Click(object sender, RoutedEventArgs e)
