@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
@@ -34,37 +35,43 @@ namespace SUNLootChecker
 
         private async void CopyClipboard_Click(object sender, RoutedEventArgs e)
         {
-            StringBuilder builder = new StringBuilder();
-            List<ResultEntry> clonedResultList = new List<ResultEntry>(ResultList);
-            clonedResultList = clonedResultList.OrderByDescending((entry) =>  entry.Amount).ThenBy((entry) => entry.PlayerName).ToList();
-            foreach(ResultEntry entry in clonedResultList)
+            if (GuildChecker.Instance.IsRunning) return;
+            await Task.Run(() => 
             {
-                builder.Append($"**{entry.PlayerName}** {entry.Amount}");
-                builder.AppendLine();
-                foreach (string item in entry.Items)
+                StringBuilder builder = new StringBuilder();
+                List<ResultEntry> clonedResultList = new List<ResultEntry>(ResultList);
+                clonedResultList = clonedResultList.OrderByDescending((entry) => entry.Amount).ThenBy((entry) => entry.PlayerName).ToList();
+                foreach (ResultEntry entry in clonedResultList)
                 {
-                    builder.Append("- " + item);
+                    builder.Append($"**{entry.PlayerName}** {entry.Amount}");
+                    builder.AppendLine();
+                    foreach (string item in entry.Items)
+                    {
+                        builder.Append("- " + item);
+                        builder.AppendLine();
+                    }
                     builder.AppendLine();
                 }
-                builder.AppendLine();
-            }
 
-            for (int i = 0; i < 10; i++)
-            {
-                try
+
+                AutoResetEvent @event = new AutoResetEvent(false);
+                Thread thread = new Thread(() =>
                 {
-                    Clipboard.SetText(builder.ToString());
-                    return;
-                }
-                catch { }
-                System.Threading.Thread.Sleep(10);
-            }
+                    Clipboard.SetDataObject(builder.ToString());
+                    @event.Set();
+                });
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+                @event.WaitOne();
+            });
+            
 
             
         }
 
         private async void CheckButton_Click(object sender, RoutedEventArgs e)
         {
+            if (GuildChecker.Instance.IsRunning) return;
             string playerLootString = AOLootText.Text;
             string chestLootString = ChestLogText.Text;
             Dispatcher.Invoke(() => TotalProgress.Value = 0);

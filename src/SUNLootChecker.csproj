@@ -23,12 +23,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="loading.gif" />
     <None Remove="logo.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="RestSharp" Version="106.11.7" />
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="loading.gif" />
     <Resource Include="logo.ico" />
   </ItemGroup>
 

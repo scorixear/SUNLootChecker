@@ -4,9 +4,19 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SUNLootChecker"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
         mc:Ignorable="d"
         Title="SUN Lootchecker" Height="800" Width="1280" Background="{StaticResource Background }" Foreground="{StaticResource Foreground}" WindowStyle="None" AllowsTransparency="True" MouseLeftButtonDown="Window_MouseLeftButtonDown">
-   <Border Style="{StaticResource WindowMainPanelStyle}">
+    <Window.Resources>
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="{StaticResource Background}"/>
+            <Setter Property="Foreground" Value="{StaticResource Hover}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Border}"/>
+        </Style>
+    </Window.Resources>
+    
+    <Border Style="{StaticResource WindowMainPanelStyle}">
+        
         <Grid>
 
             <Grid.ColumnDefinitions>
@@ -125,7 +135,7 @@
 			            StrokeThickness="1" />
                     </Button>
                 </Grid>
-                
+
                 <DataGrid x:Name="ResultGrid" Grid.Row="2" Grid.ColumnSpan="3" Margin="2" BorderBrush="{StaticResource Border}" ItemsSource="{Binding Source=ResultItems}" AutoGenerateColumns="False" Background="{DynamicResource Background}" Foreground="{DynamicResource Foreground}" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="False" HeadersVisibility="Column" CanUserReorderColumns="False" Visibility="Collapsed">
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
@@ -202,7 +212,9 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <TextBox x:Name="ResultText" HorizontalAlignment="Stretch" Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" Grid.Row="2" Grid.ColumnSpan="3" Margin="5" BorderBrush="{DynamicResource Border}" Background="{DynamicResource Background}" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Foreground}"/>
+                <TextBox x:Name="ResultText" HorizontalAlignment="Stretch" Text="test" TextAlignment="Center" TextWrapping="NoWrap" VerticalAlignment="Stretch" Grid.Row="2" Grid.ColumnSpan="3" Margin="5" BorderBrush="{DynamicResource Border}" Background="{DynamicResource Background}" IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Visibility="Visible" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Foreground}"/>
+                <Image x:Name="loadingGif" Visibility="Visible" Width="200" Height="200" Grid.Row="2" Stretch="Fill" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" gif:ImageBehavior.AnimatedSource="/loading.gif"/>
+
                 <GroupBox Header="Player Loot" Margin="5" BorderBrush="#FF4527A0">
                     <TextBox x:Name="AOLootText" BorderThickness="0" HorizontalAlignment="Stretch"  Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" BorderBrush="{DynamicResource Border}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="{DynamicResource Background}" Foreground="{DynamicResource Foreground}"/>
                 </GroupBox>

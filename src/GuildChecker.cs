@@ -24,7 +24,7 @@ namespace SUNLootChecker
             {
                 window.ResultText.Visibility = System.Windows.Visibility.Visible;
                 window.ResultText.Text = "Loading guild members (this will take a while) ... ";
-                Mouse.OverrideCursor = Cursors.Wait;
+                window.loadingGif.Visibility = System.Windows.Visibility.Visible;
                 
             });
 
@@ -52,7 +52,7 @@ namespace SUNLootChecker
             window.Dispatcher.Invoke(() =>
             {
                 window.ResultText.Visibility = System.Windows.Visibility.Collapsed;
-                Mouse.OverrideCursor = null;
+                window.loadingGif.Visibility = System.Windows.Visibility.Collapsed;
             });
             IsRunning = false;
         }
