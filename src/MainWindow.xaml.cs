@@ -36,8 +36,9 @@ namespace SUNLootChecker
         private async void CopyClipboard_Click(object sender, RoutedEventArgs e)
         {
             if (GuildChecker.Instance.IsRunning) return;
-            await Task.Run(() => 
+            await Task.Run(async () => 
             {
+
                 StringBuilder builder = new StringBuilder();
                 List<ResultEntry> clonedResultList = new List<ResultEntry>(ResultList);
                 clonedResultList = clonedResultList.OrderByDescending((entry) => entry.Amount).ThenBy((entry) => entry.PlayerName).ToList();
@@ -53,20 +54,9 @@ namespace SUNLootChecker
                     builder.AppendLine();
                 }
 
-
-                AutoResetEvent @event = new AutoResetEvent(false);
-                Thread thread = new Thread(() =>
-                {
-                    Clipboard.SetDataObject(builder.ToString());
-                    @event.Set();
-                });
-                thread.SetApartmentState(ApartmentState.STA);
-                thread.Start();
-                @event.WaitOne();
+                await TextCopy.ClipboardService.SetTextAsync(builder.ToString());
             });
-            
 
-            
         }
 
         private async void CheckButton_Click(object sender, RoutedEventArgs e)
