@@ -199,7 +199,7 @@ namespace SUNLootChecker
         {
             Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();
             string[] lines = text.Split('\n');
-            Regex regex = new Regex("\"\\d\\d\\/\\d\\d\\/\\d\\d\\d\\d \\d\\d:\\d\\d:\\d\\d\" \"(\\w+)\" \"(\\w+'s)? ?([\\w ]+)\" \"(\\d+)\" \"\\d+\" \"(-?\\d+)\"\r?");
+            Regex regex = new Regex("^\"\\d\\d\\/\\d\\d\\/\\d\\d\\d\\d \\d\\d:\\d\\d:\\d\\d\" \"(\\w+)\" \"(\\w+'s)? ?([\\w ]+)\" \"(\\d+)\" \"\\d+\" \"(-?\\d+)\"\r?$");
 
             foreach (string line in lines)
             {
@@ -286,7 +286,7 @@ namespace SUNLootChecker
         {
             Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();
             string[] lines = text.Split('\n');
-            Regex regex = new Regex("[\\d\\.\\- :APM]+;(\\w+);(\\w+)(?:@(\\d+))?;(\\d+);@?\\w+");
+            Regex regex = new Regex("^[\\d\\.\\- :APM]+;(\\w+);(\\w+)(?:@(\\d+))?;(\\d+);@?\\w+\r?$");
 
 
             foreach (string line in lines)
@@ -312,9 +312,16 @@ namespace SUNLootChecker
                     }
                     int amount = int.Parse(match.Groups[4].Value);
                     int tier = 0;
-                    if (Regex.IsMatch(itemName, "T(\\d)_\\w+"))
+                    if (Regex.IsMatch(itemName, "^T(\\d)_\\w+$"))
                     {
-                        tier = int.Parse(itemName[1] + "");
+                        try
+                        {
+                            tier = int.Parse(itemName[1] + "");
+                        } catch
+                        {
+                            Console.WriteLine(itemName);
+                        }
+                        
                     }
 
                     if (tier == 0)
