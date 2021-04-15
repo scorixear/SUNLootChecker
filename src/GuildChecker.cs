@@ -11,10 +11,12 @@ namespace SUNLootChecker
     public class GuildChecker
     {
         public static GuildChecker Instance = new GuildChecker();
-        private GuildChecker() { }
+        private GuildChecker() 
+        {
+            guildList = GuildList.Load();   
+        }
 
-
-        private List<string> GuildMembers { get; set; } = new List<string>();
+        private GuildList guildList;
         public bool IsRunning { get; private set; } = true;
 
         public async Task UpdateMembers(MainWindow window)
@@ -28,27 +30,35 @@ namespace SUNLootChecker
                 
             });
 
-            GuildMembers.Clear();
-            foreach (string guild in Configuration.instance.Guilds)
+            if(guildList.MustBeUpdated())
             {
-                RestClient client = new RestClient($"{ItemGetter.BaseUrl}guilds/{guild}/members");
-                RestRequest request = new RestRequest(Method.GET);
-                IRestResponse response = await client.ExecuteAsync(request);
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                List<string> newGuildMembers = new List<string>();
+                foreach (string guild in Configuration.instance.Guilds)
                 {
-                    dynamic data = JsonConvert.DeserializeObject(response.Content);
-                    
-                    foreach (dynamic player in data)
+                    RestClient client = new RestClient($"{ItemGetter.BaseUrl}guilds/{guild}/members");
+                    RestRequest request = new RestRequest(Method.GET);
+                    IRestResponse response = await client.ExecuteAsync(request);
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        GuildMembers.Add((string)player.Name);
+                        dynamic data = JsonConvert.DeserializeObject(response.Content);
+
+                        foreach (dynamic player in data)
+                        {
+                            newGuildMembers.Add((string)player.Name);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"StatusCode: {response.StatusCode}\nContent: {response.Content}\nUrl: {ItemGetter.BaseUrl}guilds/{guild}/members");
+                        throw new Exception($"StatusCode: {response.StatusCode}\nContent: {response.Content}\nUrl: {ItemGetter.BaseUrl}guilds/{guild}/members");
                     }
                 }
-                else
-                {
-                    Console.WriteLine($"StatusCode: {response.StatusCode}\nContent: {response.Content}\nUrl: {ItemGetter.BaseUrl}guilds/{guild}/members");
-                    throw new Exception($"StatusCode: {response.StatusCode}\nContent: {response.Content}\nUrl: {ItemGetter.BaseUrl}guilds/{guild}/members");
-                }
+                guildList.GuildMembers = newGuildMembers;
+                guildList.LastUpdated = DateTime.Now;
+                guildList.Save();
             }
+            
+            
             window.Dispatcher.Invoke(() =>
             {
                 window.ResultText.Visibility = System.Windows.Visibility.Collapsed;
@@ -60,7 +70,7 @@ namespace SUNLootChecker
         public async Task<bool> CheckPlayer(string playerName)
         {
             while (IsRunning) { await Task.Delay(10); }
-            return GuildMembers.Contains(playerName);
+            return guildList.GuildMembers.Contains(playerName);
         }
 
     }

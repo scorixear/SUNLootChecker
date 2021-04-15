@@ -33,8 +33,9 @@ namespace SUNLootChecker
 
         private Configuration() { }
 
-        public IReadOnlyDictionary<string, string> ItemList { get; set; } = new Dictionary<string, string>();
         public List<string> Guilds { get; set; }
+        public uint UpdateCycleInDays { get; set; } = 2;
+        public IReadOnlyDictionary<string, string> ItemList { get; set; } = new Dictionary<string, string>();
         public async Task<string> GetItem(string searchItem)
         {
             if (ItemList.ContainsKey(searchItem))
