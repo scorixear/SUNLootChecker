@@ -23,7 +23,9 @@ namespace SUNLootChecker
             else
             {
                 Console.WriteLine($"StatusCode: {response.StatusCode}\nContent: {response.Content}\nUrl: {BaseUrl}items/{aoItem}/data");
-                throw new Exception($"StatusCode: {response.StatusCode}\nContent: {response.Content}\nUrl: {BaseUrl}items/{aoItem}/data");
+
+                return null;
+                //throw new Exception($"StatusCode: {response.StatusCode}\nContent: {response.Content}\nUrl: {BaseUrl}items/{aoItem}/data");
             }
         }
     }

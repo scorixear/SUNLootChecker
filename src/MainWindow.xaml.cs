@@ -199,7 +199,7 @@ namespace SUNLootChecker
         {
             Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();
             string[] lines = text.Split('\n');
-            Regex regex = new Regex("^\"\\d\\d\\/\\d\\d\\/\\d\\d\\d\\d \\d\\d:\\d\\d:\\d\\d\" \"(\\w+)\" \"(\\w+'s)? ?([\\w ]+)\" \"(\\d+)\" \"\\d+\" \"(-?\\d+)\"\r?$");
+            Regex regex = new Regex("^\"\\d\\d\\/\\d\\d\\/\\d\\d\\d\\d \\d\\d:\\d\\d:\\d\\d\" \"([^\"]+)\" \"([^\"]+'s)? ?([^\"]+)\" \"([^\"]+)\" \"\\d+\" \"(-?\\d+)\"\r?$");
 
             foreach (string line in lines)
             {
@@ -286,7 +286,7 @@ namespace SUNLootChecker
         {
             Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();
             string[] lines = text.Split('\n');
-            Regex regex = new Regex("^[\\d\\.\\-\\/ :APM]+;(\\w+);(\\w+)(?:@(\\d+))?;(\\d+);@?\\w+\r?$");
+            Regex regex = new Regex("^[\\d\\.\\-\\/ :APM]+;([^\"]+);([^\"]+)(?:@(\\d+))?;(\\d+);@?[^\"]+\r?$");
 
 
             foreach (string line in lines)
@@ -334,6 +334,10 @@ namespace SUNLootChecker
                         returnDictionary.Add(playerName, new List<(string, int)>());
                     }
                     string name = await Configuration.instance.GetItem(itemName);
+                    if(name == null)
+                    {
+                        continue;
+                    }
                     Match cutMatch = Regex.Match(name, "(\\w+'s) ([\\w ]+)");
                     if (cutMatch.Success)
                     {

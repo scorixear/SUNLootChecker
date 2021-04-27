@@ -45,8 +45,12 @@ namespace SUNLootChecker
             else
             {
                 string item = await ItemGetter.SearchAoItem(searchItem);
-                ((Dictionary<string, string>)ItemList).Add(searchItem, item);
-                Save();
+                if(item != null)
+                {
+                    ((Dictionary<string, string>)ItemList).Add(searchItem, item);
+                    Save();
+                }
+                
                 return item;
             }
         }
