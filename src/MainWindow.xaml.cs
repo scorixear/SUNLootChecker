@@ -64,15 +64,16 @@ namespace SUNLootChecker
             if (GuildChecker.Instance.IsRunning) return;
             string playerLootString = AOLootText.Text;
             string chestLootString = ChestLogText.Text;
+            List<Player> playerLog = JsonConvert.DeserializeObject<List<Player>>(playerLootString);
             Dispatcher.Invoke(() => TotalProgress.Value = 0);
-            TotalProgress.Maximum = playerLootString.Split("\n").Length * 2 + chestLootString.Split("\n").Length  + 10;
+            TotalProgress.Maximum = playerLog.Sum(player => player.Loots.Count) + chestLootString.Split("\n").Length  + 10;
             ResultList.Clear();
             ResultGrid.ItemsSource = null;
             ResultGrid.ItemsSource = ResultList;
             ResultText.Visibility = Visibility.Collapsed;
             Task t = new Task(async () =>
             {
-                Dictionary<string, List<(string, int)>> playerLoot = await ParsePlayerLoot(playerLootString);
+                Dictionary<string, List<(string, int)>> playerLoot = await ParsePlayerLoot(playerLog);
                 Dictionary<string, List<(string, int)>> chestLog = ParseChestLog(chestLootString);
                 Dispatcher.Invoke(() =>
                 {
@@ -282,81 +283,91 @@ namespace SUNLootChecker
             return returnDictionary;
         }
 
-        private async Task<Dictionary<string, List<(string, int)>>> ParsePlayerLoot(string text)
+        private async Task<Dictionary<string, List<(string, int)>>> ParsePlayerLoot(List<Player> playerLog)
         {
             Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();
-            string[] lines = text.Split('\n');
-            Regex regex = new Regex("^[\\d\\.\\-\\/ :APM]+;([^\"]+);([^\"]+)(?:@(\\d+))?;(\\d+);@?[^\"]+\r?$");
 
-
-            foreach (string line in lines)
+            foreach(Player player in playerLog)
             {
-                Dispatcher.Invoke(() => TotalProgress.Value += 1);
-                if (line.Trim().Length == 0)
+             
+                // Check if Player is in Guild
+                if (!await GuildChecker.Instance.CheckPlayer(player.Name))
                 {
+                    Dispatcher.Invoke(() => TotalProgress.Value += player.Loots.Count);
                     continue;
                 }
-                Match match = regex.Match(line);
-                if (match.Success)
+
+                foreach(Loot loot in player.Loots)
                 {
-                    string playerName = match.Groups[1].Value;
-                    if (!await GuildChecker.Instance.CheckPlayer(playerName))
+                    // Update Progress
+                    Dispatcher.Invoke(() => TotalProgress.Value += 1);
+                    // Parse Item Name
+                    Regex itemRegex = new Regex("([^\"]+)(?:@(\\d+))?");
+                    Match itemMatch = itemRegex.Match(loot.ItemName);
+                    if(itemMatch.Success)
                     {
-                        continue;
-                    }
-                    string itemName = match.Groups[2].Value;
-                    int enchantment = 0;
-                    if (match.Groups[3].Success)
-                    {
-                        enchantment = int.Parse(match.Groups[3].Value);
-                    }
-                    int amount = int.Parse(match.Groups[4].Value);
-                    int tier = 0;
-                    if (Regex.IsMatch(itemName, "^T(\\d)_\\w+$"))
-                    {
-                        try
+                        // extract name
+                        string itemName = itemMatch.Groups[1].Value;
+                        int enchantment = 0;
+                        // extract enchantment
+                        if(itemMatch.Groups[2].Success) 
                         {
-                            tier = int.Parse(itemName[1] + "");
-                        } catch
-                        {
-                            Console.WriteLine(itemName);
+                            enchantment = int.Parse(itemMatch.Groups[2].Value);
                         }
-                        
-                    }
 
-                    if (tier == 0)
-                    {
-                        continue;
-                    }
+                        // extract Tier
+                        int tier = 0;
+                        if (Regex.IsMatch(itemName, "^T(\\d)_\\w+$"))
+                        {
+                            try
+                            {
+                                tier = int.Parse(itemName[1] + "");
+                            }
+                            catch
+                            {
+                                Console.WriteLine(itemName);
+                            }
 
-                    if (!returnDictionary.ContainsKey(playerName))
-                    {
-                        returnDictionary.Add(playerName, new List<(string, int)>());
-                    }
-                    string name = await Configuration.instance.GetItem(itemName);
-                    if(name == null)
-                    {
-                        continue;
-                    }
-                    Match cutMatch = Regex.Match(name, "(\\w+'s) ([\\w ]+)");
-                    if (cutMatch.Success)
-                    {
-                        name = cutMatch.Groups[2].Value;
-                    }
+                        }
 
-                    string output = $"{name} | T{tier}.{enchantment}";
-                    (string, int) foundItem = returnDictionary[playerName].Find(element => element.Item1 == output);
-                    if (foundItem!=default) {
-                        returnDictionary[playerName].Remove(foundItem);
-                        amount += foundItem.Item2;
+                        // if no tier existent, item does not need to be donated
+                        if (tier == 0)
+                        {
+                            continue;
+                        }
+                        // add player name to dic
+                        if (!returnDictionary.ContainsKey(player.Name))
+                        {
+                            returnDictionary.Add(player.Name, new List<(string, int)>());
+                        }
+                        // Get Item from chestlog
+                        string name = await Configuration.instance.GetItem(itemName);
+                        if (name == null)
+                        {
+                            continue;
+                        }
+                        // transform to chestlog format
+                        Match cutMatch = Regex.Match(name, "(\\w+'s) ([\\w ]+)");
+                        if (cutMatch.Success)
+                        {
+                            name = cutMatch.Groups[2].Value;
+                        }
+                        // sum up already added items that are the same.
+                        string output = $"{name} | T{tier}.{enchantment}";
+                        (string, int) foundItem = returnDictionary[player.Name].Find(element => element.Item1 == output);
+                        if (foundItem != default)
+                        {
+                            returnDictionary[player.Name].Remove(foundItem);
+                            loot.Quantity += foundItem.Item2;
+                        }
+                        returnDictionary[player.Name].Add((output, loot.Quantity));
                     }
-
-                    returnDictionary[playerName].Add((output, amount));
+                    else
+                    {
+                        return null;
+                    }
                 }
-                else
-                {
-                    return null;
-                }
+                
             }
             return returnDictionary;
 
