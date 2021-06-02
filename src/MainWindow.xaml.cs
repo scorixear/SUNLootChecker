@@ -61,20 +61,21 @@ namespace SUNLootChecker
 
         private async void CheckButton_Click(object sender, RoutedEventArgs e)
         {
+            Dispatcher.Invoke(() => TotalProgress.Value = 0);
             if (GuildChecker.Instance.IsRunning) return;
             string playerLootString = AOLootText.Text;
             string chestLootString = ChestLogText.Text;
             List<Player> playerLog = JsonConvert.DeserializeObject<List<Player>>(playerLootString);
-            Dispatcher.Invoke(() => TotalProgress.Value = 0);
+           
             TotalProgress.Maximum = playerLog.Sum(player => player.Loots.Count) + chestLootString.Split("\n").Length  + 10;
             ResultList.Clear();
             ResultGrid.ItemsSource = null;
             ResultGrid.ItemsSource = ResultList;
             ResultText.Visibility = Visibility.Collapsed;
-            Task t = new Task(async () =>
+            await Task.Run(async () =>
             {
-                Dictionary<string, List<(string, int)>> playerLoot = await ParsePlayerLoot(playerLog);
-                Dictionary<string, List<(string, int)>> chestLog = ParseChestLog(chestLootString);
+                Dictionary<string, List<(string, int)>> playerLoot = await LootComparer.ParsePlayerLoot(playerLog, this);
+                Dictionary<string, List<(string, int)>> chestLog = LootComparer.ParseChestLog(chestLootString, this);
                 Dispatcher.Invoke(() =>
                 {
                     ResultText.Text = "";
@@ -100,50 +101,13 @@ namespace SUNLootChecker
                     return;
                 }
 
-
-                Dictionary<string, List<(string, int)>> missingItems = new Dictionary<string, List<(string, int)>>();
-
-                foreach (KeyValuePair<string, List<(string, int)>> entry in playerLoot)
+                Dictionary<string, List<(string name, int amount)>> missingItems = LootComparer.CompareLoot(playerLoot, chestLog, this);
+                foreach (KeyValuePair<string, List<(string name, int amount)>> pair in missingItems)
                 {
-                    Dispatcher.Invoke(() => TotalProgress.Value += 1);
-                    if (chestLog.ContainsKey(entry.Key))
+                    ResultEntry entry = new ResultEntry() { PlayerName = pair.Key, Amount = pair.Value.Sum(item=>item.amount) };
+                    foreach ((string name, int amount) item in pair.Value)
                     {
-                        List<(string, int)> chestEntries = chestLog[entry.Key];
-                        List<(string, int)> entries = new List<(string, int)>();
-                        foreach ((string, int) item in entry.Value)
-                        {
-                            (string, int) chestEntry = chestEntries.Find(e => e.Item1 == item.Item1);
-                            if (chestEntry == default)
-                            {
-                                entries.Add((item.Item1, item.Item2));
-                            }
-                            else if (item.Item2 - chestEntry.Item2 > 0)
-                            {
-                                entries.Add((item.Item1, item.Item2 - chestEntry.Item2));
-                            }
-                        }
-                        if (entries.Count > 0)
-                        {
-                            missingItems.Add(entry.Key, entries);
-                        }
-                    }
-                    else
-                    {
-                        missingItems.Add(entry.Key, new List<(string, int)>(entry.Value));
-                    }
-                }
-                missingItems = ClearItems(missingItems);
-
-
-
-                
-
-                foreach (KeyValuePair<string, List<(string, int)>> pair in missingItems)
-                {
-                    ResultEntry entry = new ResultEntry() { PlayerName = pair.Key, Amount = pair.Value.Count };
-                    foreach ((string, int) item in pair.Value)
-                    {
-                        entry.Items.Add(item.Item1 + " | " + item.Item2);
+                        entry.Items.Add(item.name + " | " + item.amount);
                     }
                     Dispatcher.Invoke(() => ResultList.Add(entry));
                 }
@@ -153,224 +117,8 @@ namespace SUNLootChecker
                 });
 
             });
-            t.Start();
-            await t;
             ResultGrid.ItemsSource = null;
             ResultGrid.ItemsSource = ResultList;
-
-        }
-
-        private Dictionary<string, List<(string, int)>> ClearItems(Dictionary<string, List<(string, int)>> missingItems)
-        {
-            Dictionary<string, List<(string, int)>> tempDictionary = new Dictionary<string, List<(string, int)>>(missingItems);
-            foreach(KeyValuePair<string, List<(string, int)>> pair in tempDictionary)
-            {
-                List<(string, int)> tempItems = new List<(string, int)>(pair.Value);
-                foreach((string, int) item in tempItems)
-                {
-                    if(CheckItem(item.Item1))
-                    {
-                        missingItems[pair.Key].Remove(item);
-                    }
-                }
-                if(missingItems[pair.Key].Count == 0)
-                {
-                    missingItems.Remove(pair.Key);
-                }
-            }
-
-            return missingItems;
-        }
-
-        private bool CheckItem(string item)
-        {
-            string[] ignoredItems = JsonConvert.DeserializeObject<string[]>(File.ReadAllText(Path.Combine(Configuration.BaseLocation, "Exclude.json")));
-
-            foreach(string exclude in ignoredItems)
-            {
-                if(item.Contains(exclude))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private Dictionary<string, List<(string, int)>> ParseChestLog(string text)
-        {
-            Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();
-            string[] lines = text.Split('\n');
-            Regex regex = new Regex("^\"\\d\\d\\/\\d\\d\\/\\d\\d\\d\\d \\d\\d:\\d\\d:\\d\\d\" \"([^\"]+)\" \"([^\"]+'s)? ?([^\"]+)\" \"([^\"]+)\" \"\\d+\" \"(-?\\d+)\"\r?$");
-
-            foreach (string line in lines)
-            {
-                Dispatcher.Invoke(() => TotalProgress.Value += 1);
-                if (line == "\"Date\" \"Player\" \"Item\" \"Enchantment\" \"Quality\" \"Amount\"\r" || line.Trim().Length == 0)
-                {
-                    continue;
-                }
-                Match match = regex.Match(line);
-                if (match.Success)
-                {
-                    string playerName = match.Groups[1].Value;
-                    string itemName = match.Groups[3].Value;
-                    int amount = int.Parse(match.Groups[5].Value);
-                    if(amount < 0)
-                    {
-                        continue;
-                    }
-                    int tier = 0;
-                    if (match.Groups[2].Success)
-                    {
-                        switch (match.Groups[2].Value)
-                        {
-                            case "Elder's":
-                                tier = 8;
-                                break;
-                            case "Grandmaster's":
-                                tier = 7;
-                                break;
-                            case "Master's":
-                                tier = 6;
-                                break;
-                            case "Expert's":
-                                tier = 5;
-                                break;
-                            case "Adept's":
-                                tier = 4;
-                                break;
-                            case "Journeyman's":
-                                tier = 3;
-                                break;
-                            case "Novice's":
-                                tier = 2;
-                                break;
-                            case "Beginner's":
-                                tier = 1;
-                                break;
-                            default:
-                                tier = 0;
-                                break;
-                        }
-                    }
-
-                    if(tier == 0)
-                    {
-                        continue;
-                    }
-                    int enchantment = int.Parse(match.Groups[4].Value);
-                    if (!returnDictionary.ContainsKey(playerName))
-                    {
-                        returnDictionary.Add(playerName, new List<(string, int)>());
-                    }
-
-                    string output = $"{itemName} | T{tier}.{enchantment}";
-                    (string, int) foundItem = returnDictionary[playerName].Find(element => element.Item1 == output);
-                    if (foundItem != default)
-                    {
-                        returnDictionary[playerName].Remove(foundItem);
-                        amount += foundItem.Item2;
-                    }
-
-                    returnDictionary[playerName].Add((output, amount));
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
-            return returnDictionary;
-        }
-
-        private async Task<Dictionary<string, List<(string, int)>>> ParsePlayerLoot(List<Player> playerLog)
-        {
-            Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();
-
-            foreach(Player player in playerLog)
-            {
-             
-                // Check if Player is in Guild
-                if (!await GuildChecker.Instance.CheckPlayer(player.Name))
-                {
-                    Dispatcher.Invoke(() => TotalProgress.Value += player.Loots.Count);
-                    continue;
-                }
-
-                foreach(Loot loot in player.Loots)
-                {
-                    // Update Progress
-                    Dispatcher.Invoke(() => TotalProgress.Value += 1);
-                    // Parse Item Name
-                    Regex itemRegex = new Regex("([^\"]+)(?:@(\\d+))?");
-                    Match itemMatch = itemRegex.Match(loot.ItemName);
-                    if(itemMatch.Success)
-                    {
-                        // extract name
-                        string itemName = itemMatch.Groups[1].Value;
-                        int enchantment = 0;
-                        // extract enchantment
-                        if(itemMatch.Groups[2].Success) 
-                        {
-                            enchantment = int.Parse(itemMatch.Groups[2].Value);
-                        }
-
-                        // extract Tier
-                        int tier = 0;
-                        if (Regex.IsMatch(itemName, "^T(\\d)_\\w+$"))
-                        {
-                            try
-                            {
-                                tier = int.Parse(itemName[1] + "");
-                            }
-                            catch
-                            {
-                                Console.WriteLine(itemName);
-                            }
-
-                        }
-
-                        // if no tier existent, item does not need to be donated
-                        if (tier == 0)
-                        {
-                            continue;
-                        }
-                        // add player name to dic
-                        if (!returnDictionary.ContainsKey(player.Name))
-                        {
-                            returnDictionary.Add(player.Name, new List<(string, int)>());
-                        }
-                        // Get Item from chestlog
-                        string name = await Configuration.instance.GetItem(itemName);
-                        if (name == null)
-                        {
-                            continue;
-                        }
-                        // transform to chestlog format
-                        Match cutMatch = Regex.Match(name, "(\\w+'s) ([\\w ]+)");
-                        if (cutMatch.Success)
-                        {
-                            name = cutMatch.Groups[2].Value;
-                        }
-                        // sum up already added items that are the same.
-                        string output = $"{name} | T{tier}.{enchantment}";
-                        (string, int) foundItem = returnDictionary[player.Name].Find(element => element.Item1 == output);
-                        if (foundItem != default)
-                        {
-                            returnDictionary[player.Name].Remove(foundItem);
-                            loot.Quantity += foundItem.Item2;
-                        }
-                        returnDictionary[player.Name].Add((output, loot.Quantity));
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                
-            }
-            return returnDictionary;
-
         }
 
         private async void Grid_Loaded(object sender, RoutedEventArgs e)
@@ -521,6 +269,28 @@ namespace SUNLootChecker
         private void Window_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             DragMove();
+        }
+
+        private void GroupBox_Drop(object sender, DragEventArgs e)
+        {
+            if(e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                if(files.Length == 1)
+                {
+                    string fileName = Path.GetFileName(files[0]);
+                    if (fileName.StartsWith("CombatLoots") && fileName.EndsWith(".json"))
+                    {
+                        AOLootText.Text = File.ReadAllText(files[0]);
+                    }
+                }
+            }
+        }
+
+        private void AOLootText_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 

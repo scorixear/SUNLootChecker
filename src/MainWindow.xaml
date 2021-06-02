@@ -16,7 +16,7 @@
     </Window.Resources>
     
     <Border Style="{StaticResource WindowMainPanelStyle}">
-        
+
         <Grid>
 
             <Grid.ColumnDefinitions>
@@ -216,7 +216,7 @@
                 <Image x:Name="loadingGif" Visibility="Visible" Width="200" Height="200" Grid.Row="2" Stretch="Fill" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" gif:ImageBehavior.AnimatedSource="/loading.gif"/>
 
                 <GroupBox Header="Player Loot" Margin="5" BorderBrush="#FF4527A0">
-                    <TextBox x:Name="AOLootText" BorderThickness="0" HorizontalAlignment="Stretch"  Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" BorderBrush="{DynamicResource Border}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="{DynamicResource Background}" Foreground="{DynamicResource Foreground}"/>
+                    <TextBox x:Name="AOLootText" BorderThickness="0" HorizontalAlignment="Stretch"  Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" BorderBrush="{DynamicResource Border}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="{DynamicResource Background}" Foreground="{DynamicResource Foreground}" Drop="GroupBox_Drop" PreviewDragOver="AOLootText_PreviewDragOver"/>
                 </GroupBox>
                 <GroupBox Header="Chest Log" Margin="5"  Grid.Column="1">
                     <TextBox x:Name="ChestLogText" BorderThickness="0" HorizontalAlignment="Stretch" Text="" TextWrapping="NoWrap" VerticalAlignment="Stretch" BorderBrush="{DynamicResource Border}" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="{DynamicResource Background}" Foreground="{DynamicResource Foreground}"/>
