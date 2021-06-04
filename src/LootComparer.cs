@@ -154,7 +154,7 @@ namespace SUNLootChecker
                     // Update Progress
                     mainWindow.Dispatcher.Invoke(() => mainWindow.TotalProgress.Value += 1);
                     // Parse Item Name
-                    Regex itemRegex = new Regex("([^\"]+)(?:@(\\d+))?");
+                    Regex itemRegex = new Regex("([^\"@]+)(?:@(\\d+))?");
                     Match itemMatch = itemRegex.Match(loot.ItemName);
                     if (itemMatch.Success)
                     {
