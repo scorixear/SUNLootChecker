@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SUNLootChecker"
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         mc:Ignorable="d"
-        Title="SUN Lootchecker" Height="800" Width="1280" Background="{StaticResource Background }" Foreground="{StaticResource Foreground}" WindowStyle="None" AllowsTransparency="True" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        Title="SUN Lootchecker" Height="1200" Width="1280" Background="{StaticResource Background }" Foreground="{StaticResource Foreground}" WindowStyle="None" AllowsTransparency="True" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Window.Resources>
         <Style TargetType="ScrollBar">
             <Setter Property="Background" Value="{StaticResource Background}"/>

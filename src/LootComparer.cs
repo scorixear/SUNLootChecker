@@ -135,6 +135,88 @@ namespace SUNLootChecker
             return returnDictionary;
         }
 
+        public static async Task<Dictionary<string, List<(string, int)>>> ParseAOLootLogger(string text, MainWindow mainWindow)
+        {
+            Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();
+            string[] lines = text.Split('\n');
+            Regex regex = new Regex("^[\\d\\.\\-\\/ :APM]+;([^\"]+);([^\"@]+)(?:@(\\d+))?;(\\d+);@?[^\"]+\r?$");
+
+
+            foreach (string line in lines)
+            {
+                mainWindow.Dispatcher.Invoke(() => mainWindow.TotalProgress.Value += 1);
+                if (line.Trim().Length == 0)
+                {
+                    continue;
+                }
+                Match match = regex.Match(line);
+                if (match.Success)
+                {
+                    string playerName = match.Groups[1].Value;
+                    if (!await GuildChecker.Instance.CheckPlayer(playerName))
+                    {
+                        continue;
+                    }
+                    string itemName = match.Groups[2].Value;
+                    int enchantment = 0;
+                    if (match.Groups[3].Success)
+                    {
+                        enchantment = int.Parse(match.Groups[3].Value);
+                    }
+                    int amount = int.Parse(match.Groups[4].Value);
+                    int tier = 0;
+                    if (Regex.IsMatch(itemName, "^T(\\d)_\\w+$"))
+                    {
+                        try
+                        {
+                            tier = int.Parse(itemName[1] + "");
+                        }
+                        catch
+                        {
+                            Console.WriteLine(itemName);
+                        }
+
+                    }
+
+                    if (tier == 0)
+                    {
+                        continue;
+                    }
+
+                    if (!returnDictionary.ContainsKey(playerName))
+                    {
+                        returnDictionary.Add(playerName, new List<(string, int)>());
+                    }
+                    string name = await Configuration.instance.GetItem(itemName);
+                    if (name == null)
+                    {
+                        continue;
+                    }
+                    Match cutMatch = Regex.Match(name, "(\\w+'s) ([\\w ]+)");
+                    if (cutMatch.Success)
+                    {
+                        name = cutMatch.Groups[2].Value;
+                    }
+
+                    string output = $"{name} | T{tier}.{enchantment}";
+                    (string, int) foundItem = returnDictionary[playerName].Find(element => element.Item1 == output);
+                    if (foundItem != default)
+                    {
+                        returnDictionary[playerName].Remove(foundItem);
+                        amount += foundItem.Item2;
+                    }
+
+                    returnDictionary[playerName].Add((output, amount));
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            return returnDictionary;
+
+        }
+
         public static async Task<Dictionary<string, List<(string, int)>>> ParsePlayerLoot(List<Player> playerLog, MainWindow mainWindow)
         {
             Dictionary<string, List<(string, int)>> returnDictionary = new Dictionary<string, List<(string, int)>>();

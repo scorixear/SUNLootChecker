@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -59,22 +60,68 @@ namespace SUNLootChecker
 
         }
 
+        private static bool IsValidJson(string strInput)
+        {
+            if (string.IsNullOrWhiteSpace(strInput)) { return false; }
+            strInput = strInput.Trim();
+            if ((strInput.StartsWith("{") && strInput.EndsWith("}")) || //For object
+                (strInput.StartsWith("[") && strInput.EndsWith("]"))) //For array
+            {
+                try
+                {
+                    var obj = JToken.Parse(strInput);
+                    return true;
+                }
+                catch (JsonReaderException jex)
+                {
+                    //Exception in parsing json
+                    return false;
+                }
+                catch (Exception ex) //some other exception
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         private async void CheckButton_Click(object sender, RoutedEventArgs e)
         {
             Dispatcher.Invoke(() => TotalProgress.Value = 0);
             if (GuildChecker.Instance.IsRunning) return;
             string playerLootString = AOLootText.Text;
             string chestLootString = ChestLogText.Text;
-            List<Player> playerLog = JsonConvert.DeserializeObject<List<Player>>(playerLootString);
-           
-            TotalProgress.Maximum = playerLog.Sum(player => player.Loots.Count) + chestLootString.Split("\n").Length  + 10;
+            List<Player> playerLog = null;
+            if (IsValidJson(playerLootString))
+            {
+                playerLog = JsonConvert.DeserializeObject<List<Player>>(playerLootString);
+                TotalProgress.Maximum = playerLog.Sum(player => player.Loots.Count);
+            } 
+            else
+            {
+                TotalProgress.Maximum = playerLootString.Split("\n").Length * 2;
+            }
+
+
+            TotalProgress.Maximum += chestLootString.Split("\n").Length  + 10;
             ResultList.Clear();
             ResultGrid.ItemsSource = null;
             ResultGrid.ItemsSource = ResultList;
             ResultText.Visibility = Visibility.Collapsed;
             await Task.Run(async () =>
             {
-                Dictionary<string, List<(string, int)>> playerLoot = await LootComparer.ParsePlayerLoot(playerLog, this);
+                Dictionary<string, List<(string, int)>> playerLoot;
+                if (playerLog != null)
+                {
+                    playerLoot = await LootComparer.ParsePlayerLoot(playerLog, this);
+                } else
+                {
+                    playerLoot = await LootComparer.ParseAOLootLogger(playerLootString, this);
+                }
+                 
                 Dictionary<string, List<(string, int)>> chestLog = LootComparer.ParseChestLog(chestLootString, this);
                 Dispatcher.Invoke(() =>
                 {
@@ -105,9 +152,9 @@ namespace SUNLootChecker
                 foreach (KeyValuePair<string, List<(string name, int amount)>> pair in missingItems)
                 {
                     ResultEntry entry = new ResultEntry() { PlayerName = pair.Key, Amount = pair.Value.Sum(item=>item.amount) };
-                    foreach ((string name, int amount) item in pair.Value)
+                    foreach ((string name, int amount) in pair.Value)
                     {
-                        entry.Items.Add(item.name + " | " + item.amount);
+                        entry.Items.Add(name + " | " + amount);
                     }
                     Dispatcher.Invoke(() => ResultList.Add(entry));
                 }
@@ -280,10 +327,7 @@ namespace SUNLootChecker
                 if(files.Length == 1)
                 {
                     string fileName = Path.GetFileName(files[0]);
-                    if (fileName.StartsWith("CombatLoots") && fileName.EndsWith(".json"))
-                    {
-                        AOLootText.Text = File.ReadAllText(files[0]);
-                    }
+                    AOLootText.Text = File.ReadAllText(files[0]);
                 }
             }
         }
