@@ -26,34 +26,14 @@ namespace SUNLootChecker
             return returnInstance;
         }
 
-        private void Save()
-        {
-            File.WriteAllText(Path.Combine(BaseLocation, "Configuration.json"), JsonConvert.SerializeObject(this));
-        }
+        
 
         private Configuration() { }
 
         public List<string> Guilds { get; set; }
         public uint UpdateCycleInDays { get; set; } = 2;
-        public IReadOnlyDictionary<string, string> ItemList { get; set; } = new Dictionary<string, string>();
-        public async Task<string> GetItem(string searchItem)
-        {
-            if (ItemList.ContainsKey(searchItem))
-            {
-                return ItemList[searchItem];
-            }
-            else
-            {
-                string item = await ItemGetter.SearchAoItem(searchItem);
-                if(item != null)
-                {
-                    ((Dictionary<string, string>)ItemList).Add(searchItem, item);
-                    Save();
-                }
-                
-                return item;
-            }
-        }
+        
+       
 
     }
 

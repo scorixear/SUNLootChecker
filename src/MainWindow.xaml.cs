@@ -72,12 +72,12 @@ namespace SUNLootChecker
                     var obj = JToken.Parse(strInput);
                     return true;
                 }
-                catch (JsonReaderException jex)
+                catch (JsonReaderException)
                 {
                     //Exception in parsing json
                     return false;
                 }
-                catch (Exception ex) //some other exception
+                catch (Exception) //some other exception
                 {
                     return false;
                 }

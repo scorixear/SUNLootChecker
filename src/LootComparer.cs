@@ -187,7 +187,7 @@ namespace SUNLootChecker
                     {
                         returnDictionary.Add(playerName, new List<(string, int)>());
                     }
-                    string name = await Configuration.instance.GetItem(itemName);
+                    string name = await Items.instance.GetItem(itemName);
                     if (name == null)
                     {
                         continue;
@@ -275,7 +275,7 @@ namespace SUNLootChecker
                             returnDictionary.Add(player.Name, new List<(string, int)>());
                         }
                         // Get Item from chestlog
-                        string name = await Configuration.instance.GetItem(itemName);
+                        string name = await Items.instance.GetItem(itemName);
                         if (name == null)
                         {
                             continue;
