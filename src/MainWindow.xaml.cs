@@ -170,9 +170,20 @@ namespace SUNLootChecker
 
         private async void Grid_Loaded(object sender, RoutedEventArgs e)
         {
-            await GuildChecker.Instance.UpdateMembers(this);
-            ResultGrid.Visibility = Visibility.Visible;
-            ResultGrid.ItemsSource = null;
+            try
+            {
+                await GuildChecker.Instance.UpdateMembers(this);
+                ResultGrid.Visibility = Visibility.Visible;
+                ResultGrid.ItemsSource = null;
+            } catch (GuildRequestExceptions ex)
+            {
+                Dispatcher.Invoke(() => {
+                    ResultText.Text = ex.Message+"\nRestart the application or contact pauluap#3338 if that doesn't help.";
+                    CheckButton.IsEnabled = false;
+                });
+            }
+            
+            
         }
 
 

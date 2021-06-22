@@ -108,7 +108,7 @@ namespace SUNLootChecker
 
                     if (tier == 0)
                     {
-                        continue;
+                        tier = 8;
                     }
                     int enchantment = int.Parse(match.Groups[4].Value);
                     if (!returnDictionary.ContainsKey(playerName))
